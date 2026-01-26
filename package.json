@@ -1,0 +1,26 @@
+{
+  "name": "cli-games",
+  "version": "1.0.0",
+  "description": "Mini juegos en la terminal con Node.js (Snake, Ahorcado, etc.)",
+  "main": "snake.js",
+  "scripts": {
+    "start": "node snake.js",
+    "ahorcado": "node ahorcado.js",
+    "guess": "node guess-number.js"
+  },
+  "keywords": [
+    "cli",
+    "games",
+    "nodejs",
+    "snake",
+    "ahorcado"
+  ],
+  "author": "Fernando",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "4.1.2",
+    "chess.js": "^1.4.0",
+    "figlet": "^1.10.0",
+    "stockfish": "^17.1.0"
+  }
+}
