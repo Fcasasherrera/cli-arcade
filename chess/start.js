@@ -1,14 +1,12 @@
 #!/usr/bin/env node
 // file: chess-ai.js
 
-const readline = require("readline");
 const chalk = require("chalk");
 const { Chess } = require("chess.js");
 const path = require("path");
 const loadEngine = require("./loadEngine.js");
+const { Select } = require("enquirer");
 
-const engine = loadEngine(require.resolve("stockfish/src/stockfish-17.1-8e4d048.js"));
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const game = new Chess();
 
 const pieceIcons = {
@@ -18,76 +16,105 @@ const pieceIcons = {
 
 function drawBoard() {
   console.clear();
-  console.log(chalk.green("\n♔ CLI Chess vs AI ♚\n"));
+  console.log(chalk.bgMagenta.white.bold("\n♔ CLI Chess vs AI ♚\n"));
   const board = game.board();
   for (let i = 0; i < 8; i++) {
-    let row = "";
+    let row = chalk.bgBlack.white(`${8 - i} `);
     for (let j = 0; j < 8; j++) {
       const square = board[i][j];
-      row += square ? pieceIcons[square.color][square.type] + " " : chalk.gray("· ");
+      const bg = (i + j) % 2 === 0 ? chalk.bgGray : chalk.bgWhite;
+      const piece = square ? pieceIcons[square.color][square.type] : " ";
+      row += bg.black(` ${piece} `);
     }
-    console.log(8 - i + " " + row);
+    console.log(row);
   }
-  console.log("  a b c d e f g h\n");
+  console.log(chalk.bgBlack.white("   a  b  c  d  e  f  g  h\n"));
   console.log(chalk.yellow(`Turn: ${game.turn() === "w" ? "White" : "Black"}`));
 }
 
-function aiTurn() {
-  engine.send("position fen " + game.fen());
-  engine.send("go movetime 2000", (msg) => {
-    const parts = msg.split(" ");
-    const aiMove = parts[1];
-    if (aiMove) {
-      game.move(aiMove, { sloppy: true });
-      console.log(chalk.red(`🤖 AI plays: ${aiMove}`));
-      drawBoard();
-      askMove();
-    }
-  });
-}
+function startGame(movetime) {
+  const readline = require("readline");
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const engine = loadEngine(require.resolve("stockfish/src/stockfish-17.1-8e4d048.js"));
 
-function askMove() {
-  if (game.isGameOver()) {
-    console.log(chalk.magenta("👋 Game over!"));
-    rl.close();
-    engine.quit();
-    return;
+  function aiTurn() {
+    engine.send("position fen " + game.fen());
+    engine.send(`go movetime ${movetime}`, (msg) => {
+      const parts = msg.split(" ");
+      const aiMove = parts[1];
+      if (aiMove) {
+        game.move(aiMove, { sloppy: true });
+        console.log(chalk.red(`🤖 AI plays: ${aiMove}`));
+        drawBoard();
+        askMove();
+      }
+    });
   }
 
-  rl.question("Enter your move (e.g. e2e4, q to quit): ", (input) => {
-    if (input.toLowerCase() === "q") {
-      console.log(chalk.magenta("👋 Game ended."));
+  function askMove() {
+    if (game.isGameOver()) {
+      console.log(chalk.magenta("👋 Game over!"));
       rl.close();
       engine.quit();
       return;
     }
 
-    const normalized = input.replace(/\s+/g, "");
-    let move;
+    rl.question("Enter your move (e.g. e2e4, q to quit): ", (input) => {
+      if (input.toLowerCase() === "q") {
+        console.log(chalk.magenta("👋 Game ended."));
+        rl.close();
+        engine.quit();
+        return;
+      }
 
-    try {
-      move = game.move(normalized, { sloppy: true });
-    } catch (err) {
-      console.log(chalk.red(`❌ Illegal move: ${normalized}`));
-      return askMove();
-    }
+      const normalized = input.replace(/\s+/g, "");
+      let move;
 
-    if (!move) {
-      console.log(chalk.red(`❌ Illegal move: ${normalized}`));
-      return askMove();
-    }
+      try {
+        move = game.move(normalized, { sloppy: true });
+      } catch (err) {
+        console.log(chalk.red(`❌ Illegal move: ${normalized}`));
+        return askMove();
+      }
 
-    drawBoard();
-    aiTurn();
+      if (!move) {
+        console.log(chalk.red(`❌ Illegal move: ${normalized}`));
+        return askMove();
+      }
+
+      drawBoard();
+      aiTurn();
+    });
+  }
+
+  // Inicialización del motor
+  engine.send("uci", () => {
+    engine.send("isready", () => {
+      drawBoard();
+      askMove();
+    });
   });
 }
 
-
-// --- Inicialización correcta ---
-engine.send("uci", (msg) => {
-  console.log("uciok:", msg);
-  engine.send("isready", (msg) => {
-    drawBoard();
-    askMove();
-  });
+// --- Menú de dificultad ---
+const prompt = new Select({
+  name: "level",
+  message: "Choose AI level",
+  choices: ["Level 1", "Level 2", "Level 3", "Boss Mode"]
 });
+
+prompt.run()
+  .then(answer => {
+    console.log(chalk.cyan(`🎮 Selected difficulty: ${answer}`));
+
+    const movetime = {
+      "Level 1": 300,
+      "Level 2": 800,
+      "Level 3": 1500,
+      "Boss Mode": 3000
+    }[answer];
+
+    // arrancar juego después de elegir nivel
+    startGame(movetime);
+  })
+  .catch(console.error);
