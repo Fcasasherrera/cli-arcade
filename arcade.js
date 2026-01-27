@@ -40,10 +40,12 @@ function mostrarMenu() {
 
     if (juego.script) {
       console.log(chalk.green(`\n🎮 Iniciando ${juego.nombre}...\n`));
+      console.clear();
       rl.close();
       require("child_process").spawn("node", [juego.script], { stdio: "inherit" });
     } else {
       console.log(chalk.magenta("👋 Gracias por jugar, hasta la próxima!"));
+      console.clear();
       rl.close();
     }
   });
