@@ -23,12 +23,13 @@ function drawBoard() {
     for (let j = 0; j < 8; j++) {
       const square = board[i][j];
       const bg = (i + j) % 2 === 0 ? chalk.bgGray : chalk.bgWhite;
-      const piece = square ? pieceIcons[square.color][square.type] : " ";
-      row += bg.black(` ${piece} `);
+      const piece = square ? pieceIcons[square.color][square.type] : "  "; // más ancho
+      row += bg.black(` ${piece} `); // casilla más grande
     }
     console.log(row);
+    console.log(row); // duplicar línea para hacerlo más alto
   }
-  console.log(chalk.bgBlack.white("   a  b  c  d  e  f  g  h\n"));
+  console.log(chalk.bgBlack.white("    a   b   c   d   e   f   g   h\n"));
   console.log(chalk.yellow(`Turn: ${game.turn() === "w" ? "White" : "Black"}`));
 }
 
