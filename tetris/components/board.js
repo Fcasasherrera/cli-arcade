@@ -1,3 +1,5 @@
+import { colors } from './pieces.js';
+
 export function createBoard(width, height) {
   return Array.from({ length: height }, () => Array(width).fill(" "));
 }
@@ -25,4 +27,23 @@ export function placePiece(board, piece) {
       }
     }
   }
+}
+
+
+export function drawMiniBoard(piece) {
+  const color = colors[piece.type];
+  const size = 4;
+  let output = "";
+  for (let y = 0; y < size; y++) {
+    let row = "";
+    for (let x = 0; x < size; x++) {
+      if (piece.shape[y] && piece.shape[y][x]) {
+        row += color("██");
+      } else {
+        row += "  ";
+      }
+    }
+    output += row + "\n";
+  }
+  return output;
 }

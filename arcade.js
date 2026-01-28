@@ -19,7 +19,7 @@ console.log(chalk.yellow("Bienvenido Fernando ⚡ a tu Arcade en la terminal!\n"
 const juegos = [
   { id: 1, nombre: "Snake 🐍", script: "./snake/start.js" },
   { id: 2, nombre: "Chess 💀", script: "./chess/start.js" },
-  { id: 3, nombre: "Tetris 🧩", script: "./tetris/start.js" },
+  { id: 3, nombre: "Tetris 🧩", script: "./tetris/index.js" },
   { id: 4, nombre: "Salir 🚪", script: null }
 ];
 
